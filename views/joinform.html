@@ -43,7 +43,7 @@
             if( !pwd ){ return alert('비밀번호를 입력하세요'); }
             if( !nick ){ return alert('닉네임을 입력하세요'); }
 
-            const result = await axios.post('/user/join', {email, pwd, nick});
+            const result = await axios.post('/user/join', {email, pwd, nickname});
             const msg = result.data.msg;
             if( msg != 'ok'){
                 document.getElementById('message').innerHTML=msg;

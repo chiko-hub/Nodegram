@@ -29,6 +29,127 @@
                 </div>
             </div>
         </div>
+
+        <div class="search-wrap">
+            <form id="hashtag-form" method="post">
+                <div class="field">
+                    <input type="text" id="word"/>
+                    <button>검색</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="feedlist"></div>
+
     </div>
+    <script type="text/javascript">
+        let loginUser = {};
+        let followers = [];   // 나를 팔로우하는 사람들의 배열
+        let followings = [];  // 내가 팔로우 하는 사람들의 배열
+        getLoginuser();
+        getFeedList();
+
+        async function getFeedList(){
+            try{
+                const result = await axios.get('/feed/getFeedList');
+                const feeds = result.data;
+                displayFeed(feeds);
+            }catch(err){ console.error(err);}
+        }    
+
+        document.getElementById('hashtag-form').addEventListener('submit', async (e)=>{
+            e.preventDefault();
+            const word = e.target.word.value;
+            if( !word ){
+                getFeedList();
+                return;                
+            }
+            try{
+                const result = await axios.post('/feed/search', {word});
+                const feeds = result.data;
+                displayFeed( feeds );
+            }catch(err){ console.error(err); }
+        });
+
+        async function displayFeed(feeds){
+            if( feeds.length>=1 ){
+                
+                const feedlist = document.querySelector("#feedlist");
+                feedlist.innerHTML = '';
+
+                feeds.map((feed, idx)=>{
+
+                    let feed_wrap = document.createElement('div');
+                    feed_wrap.className = 'feed_wrap';
+
+                    let feed_author = document.createElement('div');
+                    feed_author.className = 'feed_author';
+                    feed_author.textContent = feed.num + "  " + feed.writer;
+
+                    let follow_button = document.createElement('button');
+                    follow_button.textContent='FOLLOW';
+                    follow_button.style.margin = '0 10px';
+
+                    // 팔로우 버튼은 피드번호 작성자 오른쪽 옆에 표시
+                    // 자신이 쓴 게시물이거나  이미 팔로우하는사람의 게시물이면 버튼 표시하지 않습니다
+                    // 아래는 버튼이 표시되는 조건입니다.
+                    // 자신이 쓴 게시물이 아니면서 이미 팔로우하는 사람의 게시물이 아니라면
+                    console.log('loginUser.nickname', loginUser.nickname);
+                    
+                    console.log('feed.writer', feed.writer);
+                    if( (loginUser.nickname != feed.writer) && ( !followings.includes(feed.writer) ) ){
+                        feed_author.appendChild( follow_button );
+                    }
+                    follow_button.addEventListener('click', async (e)=>{
+                        try{
+                            const result = await axios.post('/user/follow', {ffrom:loginUser.nickname, fto:feed.writer});
+                            getLoginuser();
+                            getFeedList();
+                        }catch(err){console.error(err);}
+                    });
+                    
+
+                    let feed_img = document.createElement('div');
+                    feed_img.className  = 'feed_img';
+                    feed_img.innerHTML = "<img src='/img/" + feed.savefilename + "' />";
+
+                    let feed_info = document.createElement('div');
+                    feed_info.className = 'feed_info';
+                    let feed_content = document.createElement('div');
+                    feed_content.className = 'feed_content';
+                    feed_content.innerHTML = "<pre>" + feed.content + "</pre>";
+                    feed_info.appendChild( feed_content );
+
+                    feed_wrap.appendChild( feed_author );
+                    feed_wrap.appendChild( feed_img );
+                    feed_wrap.appendChild( feed_info );
+
+                    feedlist.appendChild( feed_wrap );
+                });
+            }else{
+                alert('게시물이 없거나 검색결과가 없습니다');
+                document.getElementById('word').innerHTML='';
+                getFeedList();
+            }
+        }
+
+        async function getLoginuser(){
+            try{
+                const result = await axios.get('/user/getLoginUser');
+                loginUser = result.data.loginUser;
+                document.getElementById('nickname').innerHTML = loginUser.nickname;
+
+                followers = result.data.followers;
+                followings = result.data.followings;
+
+                document.getElementById('followers').innerHTML 
+                = (followers.length>=1)? followers.length : 0;
+
+                document.getElementById('followings').innerHTML 
+                = (followings.length>=1)? followings.length : 0;
+
+            }catch(err){ console.error(err); }
+        }
+    </script>
 </body>
 </html>

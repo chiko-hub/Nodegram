@@ -27,6 +27,13 @@ app.use(session({
 }));
 
 
+const passportConfig = require('./passport');   // passport 폴더의 index.js 를 require
+passportConfig();
+app.use(passport.initialize());  
+app.use(passport.session());  
+
+
+
 const indexRouter = require('./Routers');
 const userRouter = require('./Routers/user');
 const feedRouter = require('./Routers/feed');
