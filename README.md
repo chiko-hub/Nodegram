@@ -1,6 +1,6 @@
-# Nodegram - Express 기반 SNS 서버
+ Nodegram - Express 기반 SNS 서버
 
-## 프로젝트 개요
+ 프로젝트 개요
 
 Nodegram은 Express.js를 기반으로 구축된 SNS 서비스의 백엔드 서버입니다. 사용자 인증, 피드 관리, 파일 업로드 등의 기능을 제공합니다.
 
