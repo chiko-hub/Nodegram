@@ -75,7 +75,7 @@ router.post('/join', async(req, res, next)=>{
 
 
 router.get('/getLoginUser', async (req, res, next)=>{
-    const email = req.session[ req.cookies.session ];
+    const email = req.session[ req.cookies.session ]; // 세션쿠키에 저장된 로그인유저의 이메일을 추출
     try{
         const connection = await getConnection();
         let sql = 'select * from user where email=?';
@@ -83,15 +83,15 @@ router.get('/getLoginUser', async (req, res, next)=>{
         
         let loginUserNick = rows[0].nickname;
 
-        // 나를 팔로우 하는 사람 검색
+        // 나를 팔로우 하는 사람 검색   ffrom -> fto
         sql = 'select * from follow where fto=?';
         let [rows2, fields2] = await connection.query(sql, [loginUserNick]);
-        // rows 는 {ffrom:값, fto:값}들로 구성된 객체 배열
+        // rows2에는 {ffrom:값, fto:값}들로 구성된 객체 배열
         let followers;
         if( rows2.length>=1){
             followers = rows2.map((row)=>{
                 return row.ffrom;
-            });  // map에 의해서 각 요소별 반복실행으로 리턴되는 값이 하나의 변수에 전달된다면 배열로 저장
+            });  // "map에 의해서 각 요소별 반복실행으로 리턴되는 ffrom 값" 들이 하나의 변수에 전달된다면 배열로 저장   [ 나를 팔로우하는 유저의닉네임들 ]
         }else{
             followers = [];
         }
@@ -108,7 +108,7 @@ router.get('/getLoginUser', async (req, res, next)=>{
         // }else{
         //     followings = [];
         // }
-        followings = (rows3.length>=1)? rows3.map( (row)=>{ row.fto } ) :[]; 
+        followings = (rows3.length>=1)? rows3.map( (row)=>{ return row.fto } ) :[]; 
 
         res.json( { loginUser:rows[0] , followers, followings } );
     }catch(err){ next(err); }

@@ -6,6 +6,13 @@
     <title>mainlist.html</title>
     <link rel="stylesheet" href="/gram.css" />
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script type="text/javascript">
+        let loginUser = {};
+        let followers = [];   // 나를 팔로우하는 사람들의 배열
+        let followings = [];  // 내가 팔로우 하는 사람들의 배열
+
+        
+    </script>
 </head>
 <body>
     <div class="container">
@@ -43,11 +50,29 @@
 
     </div>
     <script type="text/javascript">
-        let loginUser = {};
-        let followers = [];   // 나를 팔로우하는 사람들의 배열
-        let followings = [];  // 내가 팔로우 하는 사람들의 배열
         getLoginuser();
         getFeedList();
+        
+
+        async function getLoginuser(){
+            try{
+                const result = await axios.get('/user/getLoginUser');
+                loginUser = result.data.loginUser;
+                document.getElementById('nickname').innerHTML = loginUser.nickname;
+                console.log('loginUser.nickname-getLoginUser', loginUser.nickname);
+                followers = result.data.followers;
+                followings = result.data.followings;
+                console.log('followers-getLoginUser', followers);
+                console.log('followings-getLoginUser', followings);
+
+                document.getElementById('followers').innerHTML 
+                = (followers.length>=1)? followers.length : 0;
+
+                document.getElementById('followings').innerHTML 
+                = (followings.length>=1)? followings.length : 0;
+
+            }catch(err){ console.error(err); }
+        }
 
         async function getFeedList(){
             try{
@@ -95,16 +120,18 @@
                     // 아래는 버튼이 표시되는 조건입니다.
                     // 자신이 쓴 게시물이 아니면서 이미 팔로우하는 사람의 게시물이 아니라면
                     console.log('loginUser.nickname', loginUser.nickname);
-                    
+
                     console.log('feed.writer', feed.writer);
                     if( (loginUser.nickname != feed.writer) && ( !followings.includes(feed.writer) ) ){
                         feed_author.appendChild( follow_button );
                     }
+
                     follow_button.addEventListener('click', async (e)=>{
                         try{
                             const result = await axios.post('/user/follow', {ffrom:loginUser.nickname, fto:feed.writer});
                             getLoginuser();
                             getFeedList();
+                            location.reload();
                         }catch(err){console.error(err);}
                     });
                     
@@ -133,23 +160,7 @@
             }
         }
 
-        async function getLoginuser(){
-            try{
-                const result = await axios.get('/user/getLoginUser');
-                loginUser = result.data.loginUser;
-                document.getElementById('nickname').innerHTML = loginUser.nickname;
-
-                followers = result.data.followers;
-                followings = result.data.followings;
-
-                document.getElementById('followers').innerHTML 
-                = (followers.length>=1)? followers.length : 0;
-
-                document.getElementById('followings').innerHTML 
-                = (followings.length>=1)? followings.length : 0;
-
-            }catch(err){ console.error(err); }
-        }
+        
     </script>
 </body>
 </html>
